@@ -1,5 +1,6 @@
 package org.geepawhill.tagster
 
+import javafx.geometry.Orientation
 import tornadofx.*
 
 class Main : App(MainView::class) {
@@ -10,6 +11,16 @@ class MainView : View() {
         top = toolbar {
             button("Button")
         }
+        center = splitpane {
+            label("Tree goes here")
+            splitpane(Orientation.VERTICAL) {
+                tageditorview { }
+                label("preview goes here")
+            }
+        }
     }
 }
+
+
+
 	
