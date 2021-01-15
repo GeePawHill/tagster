@@ -2,10 +2,7 @@ package org.geepawhill.tagster
 
 import javafx.event.EventTarget
 import javafx.scene.Parent
-import tornadofx.Fragment
-import tornadofx.addChildIfPossible
-import tornadofx.label
-import tornadofx.vbox
+import tornadofx.*
 
 class TagEditorView : Fragment() {
     override val root: Parent = vbox {
