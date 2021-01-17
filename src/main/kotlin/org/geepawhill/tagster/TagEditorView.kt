@@ -4,14 +4,20 @@ import javafx.event.EventTarget
 import javafx.scene.Parent
 import tornadofx.*
 
-class TagEditorView : Fragment() {
+class TagEditorView(model: TagEditorModel) : Fragment() {
     override val root: Parent = vbox {
-        label("Tag Editor here.")
+        text("Editor box would go here.")
+        flowpane {
+            model.tags.forEach {
+                paddingLeft = 10.0
+                this += TagView(it)
+            }
+        }
     }
 }
 
-fun EventTarget.tageditorview(op: TagEditorView.() -> Unit = {}) {
-    val view = TagEditorView()
+fun EventTarget.tagEditorView(model: TagEditorModel, op: TagEditorView.() -> Unit = {}) {
+    val view = TagEditorView(model)
     this.addChildIfPossible(view.root)
     view.op()
 }
