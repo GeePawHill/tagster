@@ -20,46 +20,54 @@ class Lexer {
     private var next = 0
     private var cache: Token? = null
 
-    fun parsing(text: String) {
+    fun start(text: String) {
         next = 0
         source = text
         cache = null
     }
 
-    fun peek(): Token {
-        if (cache == null) cache = pop()
+    fun peek(): Token = popToCache()
+    fun pop(): Token = cache ?: next()
+
+    private fun popToCache(): Token {
+        cache = pop()
         return cache!!
     }
 
-    fun pop(): Token {
-        if (cache == null) cache = next()
-        val result = cache!!
-        cache = null
-        return result
+    private fun next(): Token {
+        if (afterEnd()) return Token(TokenType.UNKNOWN)
+        if (atEnd()) return eolAndAdvance()
+        return tokenFromBlock(nextBlock())
     }
 
-    private fun next(): Token {
-        if (next > source.length) return Token(TokenType.UNKNOWN)
-        if (next == source.length) {
-            next += 1
-            return Token(TokenType.EOL)
-        }
-        val text = nextBlock()
-        if (text[0].isWhitespace()) return next()
-        if (text == "and" || text == "&") return Token(TokenType.AND)
-        if (text == "or" || text == "|") return Token(TokenType.OR)
-        if (text == "not" || text == "!") return Token(TokenType.NOT)
-        if (text == "(") return Token(TokenType.LEFT_PAREN)
-        if (text == ")") return Token(TokenType.RIGHT_PAREN)
-        if (text.isNotEmpty()) return Token(TokenType.WORD, text)
-        return Token(TokenType.UNKNOWN, text)
+    private fun eolAndAdvance(): Token {
+        next += 1
+        return Token(TokenType.EOL)
     }
+
+    private fun tokenFromBlock(text: String): Token {
+        if (text[0].isWhitespace()) return next()
+        return when (text) {
+            "and", "&" -> Token(TokenType.AND)
+            "or", "|" -> Token(TokenType.OR)
+            "not", "!" -> Token(TokenType.NOT)
+            "(" -> Token(TokenType.LEFT_PAREN)
+            ")" -> Token(TokenType.RIGHT_PAREN)
+            else -> {
+                if (text.isNotEmpty()) Token(TokenType.WORD, text)
+                else Token(TokenType.UNKNOWN)
+            }
+        }
+    }
+
+    private fun atEnd() = next == source.length
+
+    private fun afterEnd() = next > source.length
 
     private fun nextBlock(): String {
-        val first = source[next++]
-        var result = first.toString()
-        if (isBlockBreaker(first)) return result
-        while (next < source.length && sameType(first, source[next])) result += source[next++]
+        var result = source[next++].toString()
+        if (isBlockBreaker(result.first())) return result
+        while (next < source.length && sameType(result.first(), source[next])) result += source[next++]
         return result.toLowerCase()
     }
 
@@ -71,9 +79,9 @@ class Lexer {
         else -> throw FilterParseError("Illegal character in filter string.")
     }
 
-    private fun isId(c: Char): Boolean {
-        val specialWordCharacters = ".-_"
-        val relativeDateOperators = "=+>"
-        return c.isLetterOrDigit() || (specialWordCharacters + relativeDateOperators).contains(c)
+    private fun isId(c: Char): Boolean = c.isLetterOrDigit() || LEGAL_ID_CHARACTERS.contains(c)
+
+    companion object {
+        val LEGAL_ID_CHARACTERS = ".-_"
     }
 }
