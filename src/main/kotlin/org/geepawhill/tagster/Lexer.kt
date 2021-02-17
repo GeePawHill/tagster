@@ -44,35 +44,30 @@ class Lexer {
             next += 1
             return Token(TokenType.EOL)
         }
-        val text = nextSameness()
+        val text = nextBlock()
         if (text[0].isWhitespace()) return next()
         if (text == "and" || text == "&") return Token(TokenType.AND)
         if (text == "or" || text == "|") return Token(TokenType.OR)
         if (text == "not" || text == "!") return Token(TokenType.NOT)
-        if (text == "=y") return Token(TokenType.WORD, text)
         if (text == "(") return Token(TokenType.LEFT_PAREN)
         if (text == ")") return Token(TokenType.RIGHT_PAREN)
         if (text.isNotEmpty()) return Token(TokenType.WORD, text)
         return Token(TokenType.UNKNOWN, text)
     }
 
-    private fun nextSameness(): String {
-        val first = source[next]
-        if ("()&!!".contains(first)) {
-            next += 1
-            return "" + first
-        }
-        var result = ""
-        while (next < source.length && sameType(first, source[next])) {
-            result += source[next++]
-        }
+    private fun nextBlock(): String {
+        val first = source[next++]
+        var result = first.toString()
+        if (isBlockBreaker(first)) return result
+        while (next < source.length && sameType(first, source[next])) result += source[next++]
         return result.toLowerCase()
     }
+
+    private fun isBlockBreaker(input: Char) = "()&|!".contains(input)
 
     private fun sameType(first: Char, second: Char): Boolean = when {
         isId(first) -> isId(second)
         first.isWhitespace() -> second.isWhitespace()
-        "&|!".contains(first) -> "&|!".contains(second)
         else -> throw FilterParseError("Illegal character in filter string.")
     }
 
