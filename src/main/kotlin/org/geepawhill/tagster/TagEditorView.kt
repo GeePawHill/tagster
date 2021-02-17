@@ -5,12 +5,16 @@ import javafx.scene.Parent
 import tornadofx.*
 
 class TagEditorView(model: TagEditorModel) : Fragment() {
-    override val root: Parent = vbox {
-        text("Editor box would go here.")
-        flowpane {
-            model.tags.forEach {
-                paddingLeft = 10.0
-                this += TagView(it)
+    override val root: Parent = tabpane {
+        tab("All") {
+            content = vbox {
+                text("Editor box would go here.")
+                flowpane {
+                    model.tags.forEach {
+                        paddingLeft = 10.0
+                        this += TagView(it)
+                    }
+                }
             }
         }
     }
